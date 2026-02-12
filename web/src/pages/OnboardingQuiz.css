@@ -1,0 +1,143 @@
+.onboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-10);
+}
+
+.onboard-header__left,
+.onboard-header__right {
+    width: 40px;
+}
+
+.onboard-back {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.onboard-back:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-glow);
+}
+
+/* Content */
+.onboard-content {
+    flex: 1;
+}
+
+.onboard-intro {
+    margin-bottom: var(--space-8);
+}
+
+.onboard-title {
+    font-family: var(--font-display);
+    font-size: 1.85rem;
+    line-height: 1.1;
+    color: var(--color-text-main);
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-3);
+}
+
+.onboard-subtitle {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    max-width: 360px;
+}
+
+/* Chip grid */
+.onboard-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.chip__emoji {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* Form */
+.onboard-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.onboard-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.onboard-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-main);
+}
+
+.onboard-input-wrap {
+    position: relative;
+}
+
+.onboard-input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-soft);
+}
+
+.onboard-submit {
+    width: 100%;
+    margin-top: var(--space-2);
+}
+
+/* Footer */
+.onboard-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4) var(--space-5);
+    padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--color-bg) 80%, transparent);
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+/* Spinner */
+.landing-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 400px) {
+    .onboard-title {
+        font-size: 1.5rem;
+    }
+}
