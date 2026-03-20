@@ -1,7 +1,0 @@
-# Cloudflare Pages — deploy from repo root:
-#   npx wrangler pages deploy barcelona-pages --project-name=YOUR_PROJECT_NAME
-#
-# Or connect this Git repo in the dashboard: Build output directory = barcelona-pages, no build command.
-
-name = "barcelona-ngo-directory"
-compatibility_date = "2025-03-01"
