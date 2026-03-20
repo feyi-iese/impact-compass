@@ -2,3 +2,8 @@ PRD_impactCompass.md
 skills/
 .DS_Store
 web/.env
+barcelona-pages/
+geocode_orgs.py
+coords.json
+SECURITY.md
+
