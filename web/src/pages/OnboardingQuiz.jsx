@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Check, MapPin } from 'lucide-react';
 import Layout from '../components/Layout';
-import { supabase } from '../lib/supabase';
+import { submitOnboardingPreferences } from '../lib/supabase';
+import { checkSubmissionRate, markSubmission } from '../lib/antiAbuse';
 import './OnboardingQuiz.css';
 
 const CAUSES = [
@@ -47,6 +48,8 @@ const OnboardingQuiz = () => {
         email: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [website, setWebsite] = useState('');
+    const [submitNotice, setSubmitNotice] = useState('');
 
     const toggleSelection = (field, value) => {
         setFormData(prev => {
@@ -68,14 +71,28 @@ const OnboardingQuiz = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (website.trim()) {
+            navigate('/feed');
+            return;
+        }
+        const rate = checkSubmissionRate('onboarding', { minIntervalMs: 10000, maxPerHour: 8 });
+        if (rate.blocked) {
+            setSubmitNotice('You are submitting too quickly. Please wait a few seconds and try again.');
+            return;
+        }
+        setSubmitNotice('');
         setIsSubmitting(true);
+        markSubmission('onboarding');
 
         try {
             localStorage.setItem('impact_preferences', JSON.stringify(formData));
 
-            if (formData.email) {
-                const { error } = await supabase.from('profiles').insert([]).select();
-            }
+            await submitOnboardingPreferences({
+                zipCode: formData.zipCode,
+                causes: formData.causes,
+                skills: formData.skills,
+                email: formData.email,
+            });
             navigate('/feed');
         } catch (error) {
             console.error('Onboarding error:', error);
@@ -203,6 +220,18 @@ const OnboardingQuiz = () => {
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
                         </div>
+                        <input
+                            type="text"
+                            className="hp-field"
+                            tabIndex="-1"
+                            autoComplete="off"
+                            value={website}
+                            onChange={(e) => setWebsite(e.target.value)}
+                            aria-hidden="true"
+                        />
+                        {submitNotice && (
+                            <p className="text-sm text-muted">{submitNotice}</p>
+                        )}
 
                         <button
                             type="submit"

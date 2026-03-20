@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MapPin, SlidersHorizontal, X } from 'lucide-react';
 import Layout from '../components/Layout';
 import OpportunityCard from '../components/OpportunityCard';
+import { fetchOpportunities } from '../lib/supabase';
 import { SEED_OPPORTUNITIES, CAUSE_COLORS } from '../lib/seedData';
 import './ActionFeed.css';
 
@@ -10,10 +11,25 @@ const ALL_CAUSES = Object.keys(CAUSE_COLORS);
 const ActionFeed = () => {
     const [selectedCause, setSelectedCause] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
+    const [opportunities, setOpportunities] = useState(SEED_OPPORTUNITIES);
     const preferences = JSON.parse(localStorage.getItem('impact_preferences') || '{}');
 
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const data = await fetchOpportunities();
+                if (cancelled || !data?.length) return;
+                setOpportunities(data);
+            } catch (e) {
+                console.warn('Opportunities: using seed data', e);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, []);
+
     const filteredOpps = useMemo(() => {
-        let results = SEED_OPPORTUNITIES.filter(o => o.status === 'active');
+        let results = opportunities.filter(o => o.status === 'active');
 
         if (!selectedCause && preferences.causes && preferences.causes.length > 0) {
             results.sort((a, b) => {
@@ -28,7 +44,7 @@ const ActionFeed = () => {
         }
 
         return results;
-    }, [selectedCause, preferences.causes]);
+    }, [selectedCause, preferences.causes, opportunities]);
 
     return (
         <Layout>

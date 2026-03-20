@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Compass, Users, Building2, ChevronRight, Send } from 'lucide-react';
 import Layout from '../components/Layout';
-import { supabase } from '../lib/supabase';
+import { submitOrgInterest } from '../lib/supabase';
+import { checkSubmissionRate, markSubmission } from '../lib/antiAbuse';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -10,6 +11,7 @@ const HomePage = () => {
     const [showOrgForm, setShowOrgForm] = useState(false);
     const [orgData, setOrgData] = useState({ name: '', email: '', cause: '' });
     const [orgStatus, setOrgStatus] = useState('idle'); // idle | loading | success
+    const [website, setWebsite] = useState('');
 
     const [compassReady, setCompassReady] = useState(false);
     useEffect(() => {
@@ -19,17 +21,32 @@ const HomePage = () => {
 
     const handleOrgSubmit = async (e) => {
         e.preventDefault();
+        if (website.trim()) {
+            setOrgStatus('success');
+            return;
+        }
+        const rate = checkSubmissionRate('org_interest', { minIntervalMs: 15000, maxPerHour: 5 });
+        if (rate.blocked) {
+            setOrgStatus('throttled');
+            return;
+        }
         setOrgStatus('loading');
+        markSubmission('org_interest');
         try {
-            // Save org interest — for MVP just store in localStorage
-            // In production, this would go to a Supabase "org_interests" table
-            const existing = JSON.parse(localStorage.getItem('org_interests') || '[]');
-            existing.push({ ...orgData, submitted_at: new Date().toISOString() });
-            localStorage.setItem('org_interests', JSON.stringify(existing));
+            const result = await submitOrgInterest({
+                name: orgData.name,
+                email: orgData.email,
+                cause: orgData.cause,
+            });
+            if (result?.skipped) {
+                const existing = JSON.parse(localStorage.getItem('org_interests') || '[]');
+                existing.push({ ...orgData, submitted_at: new Date().toISOString() });
+                localStorage.setItem('org_interests', JSON.stringify(existing));
+            }
             setOrgStatus('success');
         } catch (err) {
             console.error(err);
-            setOrgStatus('success'); // succeed anyway for MVP
+            setOrgStatus('error');
         }
     };
 
@@ -117,6 +134,34 @@ const HomePage = () => {
                             <h3>Thanks! We'll be in touch.</h3>
                             <p className="text-muted text-sm">We're onboarding organizers for the pilot — expect to hear from us within a week.</p>
                         </div>
+                    ) : orgStatus === 'throttled' ? (
+                        <div className="home-org-success">
+                            <h3>Slow down a little</h3>
+                            <p className="text-muted text-sm" style={{ marginBottom: 'var(--space-4)' }}>
+                                Please wait a few seconds before submitting again.
+                            </p>
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                onClick={() => setOrgStatus('idle')}
+                            >
+                                Back
+                            </button>
+                        </div>
+                    ) : orgStatus === 'error' ? (
+                        <div className="home-org-success">
+                            <h3>Couldn't save your details</h3>
+                            <p className="text-muted text-sm" style={{ marginBottom: 'var(--space-4)' }}>
+                                Usually Supabase row-level security is blocking the insert. Run <strong>web/supabase_rls_fix.sql</strong> in the Supabase SQL Editor (see README), then try again.
+                            </p>
+                            <button
+                                type="button"
+                                className="btn btn-outline"
+                                onClick={() => setOrgStatus('idle')}
+                            >
+                                Try again
+                            </button>
+                        </div>
                     ) : (
                         <form onSubmit={handleOrgSubmit} className="home-org-fields">
                             <p className="text-eyebrow text-accent">Organizer Interest</p>
@@ -135,6 +180,15 @@ const HomePage = () => {
                                 required
                                 value={orgData.email}
                                 onChange={(e) => setOrgData({ ...orgData, email: e.target.value })}
+                            />
+                            <input
+                                type="text"
+                                className="hp-field"
+                                tabIndex="-1"
+                                autoComplete="off"
+                                value={website}
+                                onChange={(e) => setWebsite(e.target.value)}
+                                aria-hidden="true"
                             />
                             <select
                                 className="input home-select"

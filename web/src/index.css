@@ -427,6 +427,16 @@ h3 {
   box-shadow: var(--shadow-glow);
 }
 
+/* Anti-bot honeypot field: present in DOM, invisible to users */
+.hp-field {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* ==========================================
    CHIP / TAG — for onboarding selections
    ========================================== */

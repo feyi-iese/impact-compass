@@ -3,16 +3,32 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, ArrowLeft } from 'lucide-react';
 import Layout from '../components/Layout';
 import { signUpForWaitlist } from '../lib/supabase';
+import { checkSubmissionRate, markSubmission } from '../lib/antiAbuse';
 import './LandingPage.css';
 
 const LandingPage = () => {
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState('idle');
+    const [website, setWebsite] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!email) return;
+
+        // Honeypot: bots often fill this hidden field.
+        if (website.trim()) {
+            setStatus('success');
+            return;
+        }
+
+        const rate = checkSubmissionRate('waitlist', { minIntervalMs: 15000, maxPerHour: 5 });
+        if (rate.blocked) {
+            setStatus('throttled');
+            return;
+        }
+
         setStatus('loading');
+        markSubmission('waitlist');
 
         try {
             await signUpForWaitlist(email);
@@ -60,6 +76,35 @@ const LandingPage = () => {
                         <h3>You're on the list!</h3>
                         <p className="text-muted text-sm">We'll email you when spots open up.</p>
                     </div>
+                ) : status === 'throttled' ? (
+                    <div className="landing-form">
+                        <p className="text-muted text-sm" style={{ marginBottom: 12 }}>
+                            You are submitting a bit too quickly. Please wait a few seconds and try again.
+                        </p>
+                        <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{ width: '100%' }}
+                            onClick={() => setStatus('idle')}
+                        >
+                            Back
+                        </button>
+                    </div>
+                ) : status === 'error' ? (
+                    <div className="landing-form">
+                        <p className="text-muted text-sm" style={{ marginBottom: 12 }}>
+                            Couldn’t save — usually Supabase row-level security is blocking inserts. Run{' '}
+                            <strong>web/supabase_rls_fix.sql</strong> in the Supabase SQL Editor (see README), then try again.
+                        </p>
+                        <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{ width: '100%' }}
+                            onClick={() => setStatus('idle')}
+                        >
+                            Dismiss
+                        </button>
+                    </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="landing-form">
                         <div className="landing-form__header">
@@ -73,6 +118,15 @@ const LandingPage = () => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
+                            />
+                            <input
+                                type="text"
+                                className="hp-field"
+                                tabIndex="-1"
+                                autoComplete="off"
+                                value={website}
+                                onChange={(e) => setWebsite(e.target.value)}
+                                aria-hidden="true"
                             />
                             <button
                                 type="submit"

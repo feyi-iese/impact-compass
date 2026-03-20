@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, MapPin, Users, BadgeCheck, Calendar, Share2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, BadgeCheck, Calendar, Share2 } from 'lucide-react';
 import Layout from '../components/Layout';
+import { fetchOpportunityById } from '../lib/supabase';
 import { SEED_OPPORTUNITIES, CAUSE_COLORS } from '../lib/seedData';
 import './OpportunityDetail.css';
 
@@ -9,8 +10,41 @@ const OpportunityDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [rsvpStatus, setRsvpStatus] = useState('idle');
+    const [opp, setOpp] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const opp = SEED_OPPORTUNITIES.find(o => o.id === id);
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            try {
+                const fromDb = await fetchOpportunityById(id);
+                if (cancelled) return;
+                if (fromDb) {
+                    setOpp(fromDb);
+                } else {
+                    setOpp(SEED_OPPORTUNITIES.find(o => o.id === id) ?? null);
+                }
+            } catch {
+                if (!cancelled) {
+                    setOpp(SEED_OPPORTUNITIES.find(o => o.id === id) ?? null);
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [id]);
+
+    if (loading) {
+        return (
+            <Layout>
+                <div className="detail-empty animate-scale-in">
+                    <p className="text-muted">Loading…</p>
+                </div>
+            </Layout>
+        );
+    }
 
     if (!opp) {
         return (
@@ -54,7 +88,7 @@ const OpportunityDetail = () => {
             url: window.location.href
         };
         if (navigator.share) {
-            try { await navigator.share(shareData); } catch (e) { /* cancelled */ }
+            try { await navigator.share(shareData); } catch { /* cancelled */ }
         } else {
             navigator.clipboard.writeText(window.location.href);
             alert('Link copied!');
