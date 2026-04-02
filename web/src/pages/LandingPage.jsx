@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle, ArrowLeft } from 'lucide-react';
+import { ArrowRight, CheckCircle } from 'lucide-react';
 import Layout from '../components/Layout';
 import { signUpForWaitlist } from '../lib/supabase';
 import { checkSubmissionRate, markSubmission } from '../lib/antiAbuse';
@@ -40,14 +40,7 @@ const LandingPage = () => {
     };
 
     return (
-        <Layout>
-            {/* Nav */}
-            <nav className="landing-nav animate-fade-in">
-                <Link to="/" className="landing-back-link">
-                    <ArrowLeft size={16} /> Home
-                </Link>
-            </nav>
-
+        <Layout backTo="/" backLabel="Back to home">
             {/* Hero */}
             <section className="landing-hero">
                 <div className="landing-pill animate-fade-in stagger-1">
@@ -93,8 +86,7 @@ const LandingPage = () => {
                 ) : status === 'error' ? (
                     <div className="landing-form">
                         <p className="text-muted text-sm" style={{ marginBottom: 12 }}>
-                            Couldn’t save — usually Supabase row-level security is blocking inserts. Run{' '}
-                            <strong>web/supabase_rls_fix.sql</strong> in the Supabase SQL Editor (see README), then try again.
+                            Something went wrong. We couldn't add you to the waitlist right now. Please try again shortly.
                         </p>
                         <button
                             type="button"
@@ -111,7 +103,9 @@ const LandingPage = () => {
                             <span className="text-eyebrow">Get notified</span>
                         </div>
                         <div className="landing-form__input-group">
+                            <label htmlFor="waitlist-email" className="sr-only">Email address</label>
                             <input
+                                id="waitlist-email"
                                 type="email"
                                 placeholder="Your email address"
                                 className="input"

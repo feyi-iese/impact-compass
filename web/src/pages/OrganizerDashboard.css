@@ -1,0 +1,300 @@
+/* ── Organizer Dashboard — Reskinned ── */
+
+/* ── Header ── */
+.org-dash__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--space-6);
+    gap: var(--space-4);
+}
+
+.org-dash__header-text {
+    flex: 1;
+}
+
+/* ── Stats Grid ── */
+.org-dash__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+}
+
+@media (max-width: 480px) {
+    .org-dash__stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+.org-stat-card {
+    background: var(--color-surface-warm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-2);
+}
+
+.org-stat-card__icon {
+    color: var(--color-text-soft);
+    opacity: 0.7;
+}
+
+.org-stat-card__value {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-text-main);
+}
+
+.org-stat-card__label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-soft);
+}
+
+/* ── Desktop Layout ── */
+.org-dash__layout {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+    .org-dash__layout {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: var(--space-8);
+        align-items: start;
+    }
+}
+
+.org-dash__main {
+    min-width: 0;
+}
+
+/* Sidebar: visible on desktop only */
+.org-dash__sidebar {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .org-dash__sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+        position: sticky;
+        top: var(--space-4);
+    }
+}
+
+/* ── Pill Tabs (reuse volunteer pattern) ── */
+.org-pill-tabs {
+    display: flex;
+    background: var(--color-surface-warm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 4px;
+    margin-bottom: var(--space-5);
+}
+
+.org-pill-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    transition: var(--transition-fast);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.org-pill-tab:hover {
+    color: var(--color-text-main);
+}
+
+.org-pill-tab--active {
+    background: var(--color-surface);
+    color: var(--color-text-main);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ── Event Cards ── */
+.org-events {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.org-event-card {
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: var(--transition-fast);
+}
+
+.org-event-card:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--shadow-sm);
+}
+
+.org-event-card--past {
+    opacity: 0.65;
+    background: var(--color-surface-warm);
+}
+
+.org-event-card--past:hover {
+    opacity: 0.8;
+}
+
+/* Top row: category + date */
+.org-event-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.org-event-card__category {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.4;
+}
+
+.org-event-card__date {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+/* Title */
+.org-event-card__title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-text-main);
+    margin-bottom: var(--space-3);
+}
+
+/* Progress bar */
+.org-event-card__progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.org-event-card__track {
+    flex: 1;
+    height: 6px;
+    background: var(--color-border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.org-event-card__fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s var(--ease-out-expo);
+}
+
+.org-event-card__spots {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+/* Bottom row: signup count + edit */
+.org-event-card__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.org-event-card__signups {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.org-event-card__urgency {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ── Sidebar Org Profile ── */
+.org-sidebar-profile {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+}
+
+.org-sidebar-profile__name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--color-text-main);
+    margin-bottom: var(--space-1);
+}
+
+.org-sidebar-profile__desc {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-2);
+}
+
+.org-sidebar-profile__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.78rem;
+    color: var(--color-text-soft);
+}
+
+/* ── Empty state ── */
+.org-dash__empty {
+    text-align: center;
+    padding: var(--space-8) var(--space-4);
+}
+
+/* ── CTA ── */
+.org-events__cta {
+    margin-top: var(--space-6);
+    text-align: center;
+}
+
+/* ── Button small ── */
+.btn-sm {
+    padding: var(--space-2) var(--space-4);
+    font-size: 0.8rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 400px) {
+    .org-pill-tab {
+        font-size: 0.78rem;
+        padding: var(--space-2) var(--space-3);
+    }
+}

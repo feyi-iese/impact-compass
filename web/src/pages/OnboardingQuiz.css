@@ -141,3 +141,9 @@
         font-size: 1.5rem;
     }
 }
+
+@media (min-width: 768px) {
+    .onboard-footer {
+        max-width: 720px;
+    }
+}

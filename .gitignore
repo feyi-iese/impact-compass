@@ -1,4 +1,10 @@
 PRD_impactCompass.md
+AGENTS.md
+DEPLOY_CHECKLIST.md
+GEMINI.md
+GEMINI_DEBUG_CONTEXT.md
+MIGRATION_TASKLIST.md
+PRODUCTION_TODAY_CHECKLIST.md
 skills/
 .DS_Store
 web/.env
@@ -6,4 +12,3 @@ barcelona-pages/
 geocode_orgs.py
 coords.json
 SECURITY.md
-

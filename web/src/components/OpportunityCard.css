@@ -43,6 +43,24 @@
     width: 100%;
 }
 
+.opp-card__top-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.opp-card__context-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    background: var(--color-primary-glow);
+    border: 1px solid rgba(33, 107, 165, 0.18);
+    border-radius: 999px;
+    padding: 4px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
 .opp-card__urgency {
     font-size: 0.7rem;
     font-weight: 700;

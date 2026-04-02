@@ -1,36 +1,86 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Users, BadgeCheck, Calendar, Share2 } from 'lucide-react';
+import { MapPin, Users, BadgeCheck, Calendar, Share2, Send } from 'lucide-react';
 import Layout from '../components/Layout';
-import { fetchOpportunityById } from '../lib/supabase';
+import {
+    cancelSignupRaw as cancelSignup,
+    fetchOpportunityByIdRaw as fetchOpportunityById,
+    getEventSignupCountRaw as getEventSignupCount,
+    getMySignupForEventRaw as getMySignupForEvent,
+    signupForEventRaw as signupForEvent,
+} from '../lib/supabase';
 import { SEED_OPPORTUNITIES, CAUSE_COLORS } from '../lib/seedData';
+import { useAuth } from '../context/useAuth';
+import Toast from '../components/Toast';
 import './OpportunityDetail.css';
 
 const OpportunityDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
     const [rsvpStatus, setRsvpStatus] = useState('idle');
     const [opp, setOpp] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [checkingStatus, setCheckingStatus] = useState(false);
+    const [toast, setToast] = useState(null);
 
     useEffect(() => {
         let cancelled = false;
         (async () => {
             setLoading(true);
             try {
-                const fromDb = await fetchOpportunityById(id);
+                // Fetch the event itself FIRST
+                console.log('OpportunityDetail: Fetching event data for ID:', id);
+                const fromDb = await fetchOpportunityById(id).catch(err => {
+                    console.error('Core fetch failed:', err);
+                    return null;
+                });
+                
                 if (cancelled) return;
+
                 if (fromDb) {
-                    setOpp(fromDb);
+                    setOpp({ ...fromDb, spots_left: fromDb.capacity }); 
+                    setLoading(false); // SHOW THE PAGE NOW
+
+                    // Background checks for RSVP and Count
+                    setCheckingStatus(true);
+                    try {
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Background check timeout')), 3000)
+                        );
+                        
+                        const [count, mine] = await Promise.race([
+                            Promise.all([
+                                getEventSignupCount(fromDb.id).catch(() => 0),
+                                getMySignupForEvent(fromDb.id).catch(() => null),
+                            ]),
+                            timeoutPromise
+                        ]);
+
+                        if (cancelled) return;
+                        setOpp(prev => ({ 
+                            ...prev, 
+                            spots_left: Math.max(prev.capacity - count, 0)
+                        }));
+                        if (mine?.status === 'registered') setRsvpStatus('confirmed');
+                    } catch (e) {
+                         console.warn('Background check timed out or failed', e.message);
+                         // Fallback: Ensure button is clickable even if we can't verify 'already joined' status
+                    } finally {
+                        if (!cancelled) setCheckingStatus(false);
+                    }
                 } else {
-                    setOpp(SEED_OPPORTUNITIES.find(o => o.id === id) ?? null);
+                    const fallback = SEED_OPPORTUNITIES.find(o => o.id === id);
+                    console.log('No DB event found, using fallback:', !!fallback);
+                    setOpp(fallback ?? null);
+                    setLoading(false);
                 }
-            } catch {
+            } catch (err) {
+                console.error('Fatal load error:', err);
                 if (!cancelled) {
                     setOpp(SEED_OPPORTUNITIES.find(o => o.id === id) ?? null);
+                    setLoading(false);
                 }
-            } finally {
-                if (!cancelled) setLoading(false);
             }
         })();
         return () => { cancelled = true; };
@@ -64,7 +114,8 @@ const OpportunityDetail = () => {
 
     const {
         title, description, cause_domain, organizer_name, organizer_verified,
-        date_time, duration_minutes, location_address, spots_left, capacity, requirements
+        date_time, duration_minutes, location_address, spots_left, capacity, requirements,
+        contact_phone, contact_email, contact_website
     } = opp;
 
     const date = new Date(date_time);
@@ -77,8 +128,31 @@ const OpportunityDetail = () => {
     const spotsPct = ((capacity - spots_left) / capacity) * 100;
 
     const handleRSVP = async () => {
+        if (!isAuthenticated) {
+            navigate('/auth', { state: { from: `/opportunity/${id}` } });
+            return;
+        }
         setRsvpStatus('loading');
-        setTimeout(() => { setRsvpStatus('confirmed'); }, 800);
+        try {
+            await signupForEvent(id);
+            const count = await getEventSignupCount(id).catch(() => capacity - spots_left);
+            setOpp((prev) => ({ ...prev, spots_left: Math.max(prev.capacity - count, 0) }));
+            setRsvpStatus('confirmed');
+        } catch (error) {
+            console.error(error);
+            setRsvpStatus('idle');
+        }
+    };
+
+    const handleCancelSignup = async () => {
+        try {
+            await cancelSignup(id);
+            const count = await getEventSignupCount(id).catch(() => capacity - spots_left);
+            setOpp((prev) => ({ ...prev, spots_left: Math.max(prev.capacity - count, 0) }));
+            setRsvpStatus('idle');
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     const handleShare = async () => {
@@ -91,7 +165,7 @@ const OpportunityDetail = () => {
             try { await navigator.share(shareData); } catch { /* cancelled */ }
         } else {
             navigator.clipboard.writeText(window.location.href);
-            alert('Link copied!');
+            setToast('Link copied to clipboard');
         }
     };
 
@@ -113,16 +187,13 @@ const OpportunityDetail = () => {
     };
 
     return (
-        <Layout>
-            {/* Top nav */}
-            <nav className="detail-nav animate-fade-in">
-                <button onClick={() => navigate('/feed')} className="detail-back" aria-label="Go back">
-                    <ArrowLeft size={18} />
-                </button>
+        <Layout backTo="/feed" backLabel="Back to feed">
+            {/* Share button */}
+            <div className="detail-share-row animate-fade-in">
                 <button onClick={handleShare} className="detail-share" aria-label="Share">
                     <Share2 size={18} />
                 </button>
-            </nav>
+            </div>
 
             {/* Content */}
             <article className="detail-content">
@@ -140,7 +211,13 @@ const OpportunityDetail = () => {
                 {/* Organizer */}
                 <div className="detail-org animate-fade-in stagger-2">
                     <span>By {organizer_name}</span>
-                    {organizer_verified && <BadgeCheck size={14} className="detail-org__check" />}
+                    {organizer_verified ? (
+                        <BadgeCheck size={14} className="detail-org__check" />
+                    ) : (
+                        <span className="text-xs text-muted" style={{ marginLeft: 'var(--space-2)', fontStyle: 'italic' }}>
+                            (Imported from Voluntariat en un Clic)
+                        </span>
+                    )}
                 </div>
 
                 {/* Quick info */}
@@ -188,6 +265,33 @@ const OpportunityDetail = () => {
                         <p className="detail-section__body">{requirements}</p>
                     </section>
                 )}
+
+                {/* Contact Info (for Imported Events) */}
+                {(contact_email || contact_phone || contact_website) && (
+                    <section className="detail-section animate-fade-in stagger-6">
+                        <h2 className="detail-section__heading">Contact & Inquiries</h2>
+                        <div className="detail-contact-list card-elevated" style={{ padding: 'var(--space-4)', marginTop: 'var(--space-2)' }}>
+                            {contact_email && (
+                                <div className="detail-info__item" style={{ marginBottom: 'var(--space-3)' }}>
+                                    <Send size={15} />
+                                    <a href={`mailto:${contact_email}`} className="link">{contact_email}</a>
+                                </div>
+                            )}
+                            {contact_phone && (
+                                <div className="detail-info__item" style={{ marginBottom: 'var(--space-3)' }}>
+                                    <Users size={15} />
+                                    <a href={`tel:${contact_phone}`} className="link">{contact_phone}</a>
+                                </div>
+                            )}
+                            {contact_website && (
+                                <div className="detail-info__item">
+                                    <Share2 size={15} />
+                                    <a href={contact_website.startsWith('http') ? contact_website : `https://${contact_website}`} target="_blank" rel="noopener noreferrer" className="link">Visit Website</a>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                )}
             </article>
 
             {/* Sticky CTA */}
@@ -214,16 +318,28 @@ const OpportunityDetail = () => {
                         <button className="btn btn-outline" onClick={generateICS} style={{ marginLeft: 'auto' }}>
                             <Calendar size={15} /> Add to Cal
                         </button>
+                        <button
+                            className="btn btn-ghost"
+                            onClick={() => {
+                                if (window.confirm('Are you sure you want to cancel your signup?')) {
+                                    handleCancelSignup();
+                                }
+                            }}
+                        >
+                            Cancel signup
+                        </button>
                     </div>
                 ) : (
                     <div className="detail-cta__actions">
                         <button
                             className="btn btn-primary detail-cta__btn"
                             onClick={handleRSVP}
-                            disabled={rsvpStatus === 'loading'}
+                            disabled={rsvpStatus === 'loading' || checkingStatus}
                         >
                             {rsvpStatus === 'loading' ? (
                                 <span className="detail-spinner" />
+                            ) : checkingStatus ? (
+                                "Checking status..."
                             ) : (
                                 "I'm interested"
                             )}
@@ -231,6 +347,8 @@ const OpportunityDetail = () => {
                     </div>
                 )}
             </footer>
+
+            {toast && <Toast message={toast} onDone={() => setToast(null)} />}
         </Layout>
     );
 };

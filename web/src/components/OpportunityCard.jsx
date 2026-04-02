@@ -4,7 +4,7 @@ import { Clock, MapPin, Users, BadgeCheck } from 'lucide-react';
 import { CAUSE_COLORS } from '../lib/seedData';
 import './OpportunityCard.css';
 
-const OpportunityCard = ({ opportunity, index = 0 }) => {
+const OpportunityCard = ({ opportunity, index = 0, mode = 'volunteer' }) => {
     const navigate = useNavigate();
     const {
         id, title, cause_domain, organizer_name, organizer_verified,
@@ -21,6 +21,7 @@ const OpportunityCard = ({ opportunity, index = 0 }) => {
     const causeColor = CAUSE_COLORS[cause_domain] || { bg: 'rgba(100,100,100,0.08)', text: '#555' };
     const spotsLow = spots_left <= 5;
     const spotsPct = ((capacity - spots_left) / capacity) * 100;
+    const isOrganizerPreview = mode === 'organizer';
 
     return (
         <button
@@ -37,11 +38,18 @@ const OpportunityCard = ({ opportunity, index = 0 }) => {
                 >
                     {cause_domain}
                 </span>
-                {spotsLow && (
-                    <span className="opp-card__urgency">
-                        {spots_left} left
-                    </span>
-                )}
+                <div className="opp-card__top-right">
+                    {isOrganizerPreview && (
+                        <span className="opp-card__context-badge">
+                            Volunteer view
+                        </span>
+                    )}
+                    {spotsLow && (
+                        <span className="opp-card__urgency">
+                            {spots_left} left
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Title */}

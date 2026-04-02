@@ -1,12 +1,10 @@
-/* Navigation */
-.detail-nav {
+/* Share row */
+.detail-share-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-6);
+    justify-content: flex-end;
+    margin-bottom: var(--space-4);
 }
 
-.detail-back,
 .detail-share {
     width: 40px;
     height: 40px;
@@ -21,7 +19,6 @@
     transition: var(--transition-fast);
 }
 
-.detail-back:hover,
 .detail-share:hover {
     border-color: var(--color-primary);
     color: var(--color-primary);
@@ -378,5 +375,11 @@
 @media (max-width: 400px) {
     .detail-title {
         font-size: 1.4rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .detail-cta {
+        max-width: 720px;
     }
 }

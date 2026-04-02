@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowLeft, Check, MapPin } from 'lucide-react';
+import { ArrowRight, Check, MapPin } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { submitOnboardingPreferences } from '../lib/supabase';
+import {
+    submitOnboardingPreferences,
+    sendMagicLink,
+    upsertMyProfile,
+} from '../lib/supabase';
+import { useAuth } from '../context/useAuth';
 import { checkSubmissionRate, markSubmission } from '../lib/antiAbuse';
 import './OnboardingQuiz.css';
 
@@ -40,6 +46,7 @@ const SKILL_EMOJI = {
 
 const OnboardingQuiz = () => {
     const navigate = useNavigate();
+    const { user, refreshProfile } = useAuth();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         causes: [],
@@ -71,6 +78,14 @@ const OnboardingQuiz = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validate zip code
+        const isZipValid = /^\d{5}$/.test(formData.zipCode);
+        if (!isZipValid) {
+            setSubmitNotice('Please enter a valid 5-digit zip code.');
+            return;
+        }
+
         if (website.trim()) {
             navigate('/feed');
             return;
@@ -86,6 +101,28 @@ const OnboardingQuiz = () => {
 
         try {
             localStorage.setItem('impact_preferences', JSON.stringify(formData));
+            localStorage.setItem('pending_onboarding', JSON.stringify(formData));
+
+            if (user) {
+                console.log('Saving profile for authenticated user:', user.id);
+                await upsertMyProfile({
+                    zip_code: formData.zipCode,
+                    causes: formData.causes,
+                    skills: formData.skills,
+                    onboarding_completed: true,
+                });
+                await refreshProfile();
+                navigate('/dashboard/volunteer');
+                return;
+            }
+
+            if (!formData.email) {
+                setSubmitNotice('Add an email so we can create your account with a magic link.');
+                return;
+            }
+
+            localStorage.setItem('pending_role', 'volunteer');
+            await sendMagicLink({ email: formData.email });
 
             await submitOnboardingPreferences({
                 zipCode: formData.zipCode,
@@ -93,10 +130,12 @@ const OnboardingQuiz = () => {
                 skills: formData.skills,
                 email: formData.email,
             });
-            navigate('/feed');
+            navigate('/auth');
         } catch (error) {
             console.error('Onboarding error:', error);
-            navigate('/feed');
+            setSubmitNotice(
+                `Could not send magic link. ${error?.message || 'Please check your Supabase auth settings and try again.'}`
+            );
         } finally {
             setIsSubmitting(false);
         }
@@ -123,18 +162,18 @@ const OnboardingQuiz = () => {
     const currentStep = STEP_DATA[step];
 
     return (
-        <Layout>
+        <Layout backTo={step > 1 ? undefined : '/'} backLabel="Back to home">
             {/* Progress */}
             <div className="progress-track">
                 <div className="progress-fill" style={{ width: `${(step / 3) * 100}%` }} />
             </div>
 
-            {/* Header */}
+            {/* Step header */}
             <header className="onboard-header">
                 <div className="onboard-header__left">
                     {step > 1 && (
-                        <button onClick={handleBack} className="onboard-back" aria-label="Go back">
-                            <ArrowLeft size={18} />
+                        <button onClick={handleBack} className="onboard-back" aria-label="Go to previous step">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                         </button>
                     )}
                 </div>
@@ -210,14 +249,15 @@ const OnboardingQuiz = () => {
 
                         <div className="onboard-field">
                             <label className="onboard-label">
-                                Email <span className="text-soft">(optional)</span>
+                                Email <span className="text-soft">(required to create your account)</span>
                             </label>
                             <input
                                 type="email"
-                                placeholder="For activity reminders"
+                                placeholder="For your magic-link sign in"
                                 className="input"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                required={!user}
                             />
                         </div>
                         <input
@@ -231,6 +271,11 @@ const OnboardingQuiz = () => {
                         />
                         {submitNotice && (
                             <p className="text-sm text-muted">{submitNotice}</p>
+                        )}
+                        {!user && (
+                            <p className="text-xs text-muted">
+                                Already have a link? <Link to="/auth">Sign in here</Link>.
+                            </p>
                         )}
 
                         <button

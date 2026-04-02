@@ -13,6 +13,14 @@
     margin-top: var(--space-1);
 }
 
+.feed-subtitle {
+    max-width: 42rem;
+    margin-top: var(--space-2);
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    line-height: 1.55;
+}
+
 .feed-location {
     display: flex;
     align-items: center;
@@ -20,6 +28,49 @@
     font-size: 0.8rem;
     color: var(--color-text-muted);
     margin-top: 4px;
+}
+
+/* Search */
+.feed-search {
+    position: relative;
+    margin-bottom: var(--space-4);
+}
+
+.feed-search__icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-soft);
+    pointer-events: none;
+}
+
+.feed-search__input {
+    padding-left: 40px;
+    padding-right: 36px;
+}
+
+.feed-search__clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-border);
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.feed-search__clear:hover {
+    background: var(--color-border-strong);
+    color: var(--color-text-main);
 }
 
 .feed-filter-btn {
@@ -49,6 +100,29 @@
 
 .feed-filters {
     margin-bottom: var(--space-5);
+}
+
+.feed-quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.feed-quick-actions__title {
+    margin: var(--space-2) 0;
+}
+
+.feed-quick-actions__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.feed-quick-actions__buttons .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .feed-filters__row {
@@ -88,4 +162,35 @@
 .feed-empty {
     text-align: center;
     padding: var(--space-10) var(--space-4);
+}
+
+.feed-load-more {
+    display: flex;
+    justify-content: center;
+    padding-bottom: var(--space-12);
+}
+
+@media (min-width: 640px) {
+    .feed-quick-actions {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .feed-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-4);
+    }
+
+    .feed-empty {
+        grid-column: 1 / -1;
+    }
+}
+
+.feed-seed-notice {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+    text-align: center;
 }

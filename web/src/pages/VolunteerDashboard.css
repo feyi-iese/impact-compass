@@ -1,0 +1,316 @@
+/* ── Volunteer Dashboard — Reskinned ── */
+
+/* ── Desktop Sidebar Layout ── */
+.vol-dash__layout {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+    .vol-dash__layout {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: var(--space-8);
+        align-items: start;
+    }
+}
+
+.vol-dash__main {
+    min-width: 0; /* prevent grid blowout */
+}
+
+/* Sidebar: visible on desktop only */
+.vol-dash__sidebar {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .vol-dash__sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+        position: sticky;
+        top: var(--space-4);
+    }
+}
+
+/* ── Stats Grid (sidebar) ── */
+.vol-stat-card {
+    background: var(--color-surface-warm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.vol-stat-card__label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-soft);
+}
+
+.vol-stat-card__label svg {
+    opacity: 0.7;
+}
+
+.vol-stat-card__value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-text-main);
+}
+
+.vol-sidebar-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+/* ── Profile Preferences Section (sidebar) ── */
+.vol-dash__section {
+    margin-top: 0;
+}
+
+.vol-dash__section-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--color-text-main);
+    margin-bottom: var(--space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.vol-dash__profile-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+}
+
+.vol-dash__profile-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.82rem;
+}
+
+.vol-dash__profile-label {
+    color: var(--color-text-muted);
+}
+
+.vol-dash__profile-value {
+    color: var(--color-text-main);
+    font-weight: 500;
+    text-align: right;
+}
+
+.vol-dash__causes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    justify-content: flex-end;
+}
+
+.vol-dash__cause-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-glow);
+    color: var(--color-primary);
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+/* ── Pill Tab Switcher ── */
+.vol-pill-tabs {
+    display: flex;
+    background: var(--color-surface-warm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    padding: 4px;
+    margin-bottom: var(--space-5);
+}
+
+.vol-pill-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-full);
+    transition: var(--transition-fast);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.vol-pill-tab:hover {
+    color: var(--color-text-main);
+}
+
+.vol-pill-tab--active {
+    background: var(--color-surface);
+    color: var(--color-text-main);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ── Mission Cards ── */
+.vol-missions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.vol-mission-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: var(--transition-fast);
+}
+
+.vol-mission-card:hover {
+    border-color: var(--color-primary-light);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Past mission: muted treatment */
+.vol-mission-card--past {
+    opacity: 0.7;
+    background: var(--color-surface-warm);
+}
+
+.vol-mission-card--past:hover {
+    opacity: 0.85;
+}
+
+/* Top row: category + status */
+.vol-mission-card__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+}
+
+.vol-mission-card__category {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.4;
+}
+
+.vol-mission-card__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-primary);
+}
+
+.vol-mission-card__status svg {
+    opacity: 0.8;
+}
+
+/* Completed status variant */
+.vol-mission-card__status--completed {
+    color: var(--color-text-muted);
+}
+
+/* Title */
+.vol-mission-card__title {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-text-main);
+    margin-bottom: var(--space-2);
+}
+
+/* Org name */
+.vol-mission-card__org {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-3);
+}
+
+.vol-mission-card__org-verified {
+    color: var(--color-primary);
+}
+
+/* Meta rows */
+.vol-mission-card__meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.vol-mission-card__meta-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.vol-mission-card__meta-row svg {
+    flex-shrink: 0;
+    color: var(--color-text-soft);
+}
+
+/* Pending badge */
+.vol-badge-pending {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    background: var(--color-warm-light);
+    color: var(--color-warm);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* ── Empty state ── */
+.vol-dash__empty {
+    text-align: center;
+    padding: var(--space-8) var(--space-4);
+}
+
+/* ── Find more CTA ── */
+.vol-missions__cta {
+    margin-top: var(--space-6);
+    text-align: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 400px) {
+    .vol-pill-tab {
+        font-size: 0.78rem;
+        padding: var(--space-2) var(--space-3);
+    }
+}

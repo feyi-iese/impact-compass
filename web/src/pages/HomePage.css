@@ -319,3 +319,23 @@
         padding: var(--space-4);
     }
 }
+
+@media (min-width: 768px) {
+    .home-headline {
+        font-size: 3.2rem;
+    }
+
+    .home-subhead {
+        font-size: 1.1rem;
+        max-width: 480px;
+    }
+
+    .home-paths {
+        flex-direction: row;
+        gap: var(--space-4);
+    }
+
+    .home-path {
+        flex: 1;
+    }
+}
