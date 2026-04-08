@@ -47,6 +47,14 @@
     color: var(--color-text-main);
 }
 
+.profile-page__user-role {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-soft);
+}
+
 .profile-page__user-location {
     font-size: 0.82rem;
     color: var(--color-text-muted);

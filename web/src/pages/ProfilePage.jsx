@@ -62,6 +62,7 @@ const ProfilePage = () => {
   }, [pastMissions]);
 
   const location = profile?.zip_code || profile?.city || null;
+  const displayName = profile?.display_name?.trim() || null;
   const roleLabel = profile?.role === 'organizer' ? 'Organizer' : 'Volunteer';
 
   return (
@@ -75,7 +76,10 @@ const ProfilePage = () => {
             <User size={26} strokeWidth={1.5} />
           </div>
           <div className="profile-page__user-info">
-            <span className="profile-page__user-name">{roleLabel}</span>
+            <span className="profile-page__user-name">{displayName || roleLabel}</span>
+            {displayName && (
+              <span className="profile-page__user-role">{roleLabel}</span>
+            )}
             {location && (
               <span className="profile-page__user-location">
                 Barcelona, {location}
@@ -156,6 +160,10 @@ const ProfilePage = () => {
               </>
             ) : (
               <>
+                <div className="profile-page__pref-row">
+                  <span className="profile-page__pref-label">Name</span>
+                  <span className="profile-page__pref-value">{displayName || 'Not set'}</span>
+                </div>
                 <div className="profile-page__pref-row">
                   <span className="profile-page__pref-label">Location</span>
                   <span className="profile-page__pref-value">{profile?.zip_code || 'Not set'}</span>

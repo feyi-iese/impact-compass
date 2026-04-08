@@ -234,7 +234,8 @@ const HomePage = () => {
             {/* Bottom tagline */}
             <footer className="home-footer animate-fade-in stagger-6">
                 <p className="text-soft text-xs">
-                    Built with care, launching in Barcelona. <Link to="/waitlist" className="home-footer__link">Join the waitlist →</Link>
+                    Built with care, launching in Barcelona.
+                    {/* <Link to="/waitlist" className="home-footer__link">Join the waitlist →</Link> */}
                 </p>
             </footer>
         </Layout>

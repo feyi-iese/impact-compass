@@ -111,6 +111,7 @@ const AuthPage = () => {
       const profileUpdates = {
         ...(pendingOnboarding
           ? {
+              display_name: pendingOnboarding.displayName || null,
               zip_code: pendingOnboarding.zipCode || null,
               causes: pendingOnboarding.causes || null,
               skills: pendingOnboarding.skills || null,

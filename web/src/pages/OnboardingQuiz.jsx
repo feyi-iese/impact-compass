@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -46,9 +46,10 @@ const SKILL_EMOJI = {
 
 const OnboardingQuiz = () => {
     const navigate = useNavigate();
-    const { user, refreshProfile } = useAuth();
+    const { user, profile, refreshProfile } = useAuth();
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
+        displayName: '',
         causes: [],
         skills: [],
         zipCode: '',
@@ -57,6 +58,18 @@ const OnboardingQuiz = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [website, setWebsite] = useState('');
     const [submitNotice, setSubmitNotice] = useState('');
+
+    useEffect(() => {
+        if (!user || !profile) return;
+        setFormData((prev) => ({
+            ...prev,
+            displayName: prev.displayName || profile.display_name || '',
+            causes: prev.causes.length ? prev.causes : (profile.causes || []),
+            skills: prev.skills.length ? prev.skills : (profile.skills || []),
+            zipCode: prev.zipCode || profile.zip_code || '',
+            email: prev.email || user.email || '',
+        }));
+    }, [profile, user]);
 
     const toggleSelection = (field, value) => {
         setFormData(prev => {
@@ -106,6 +119,7 @@ const OnboardingQuiz = () => {
             if (user) {
                 console.log('Saving profile for authenticated user:', user.id);
                 await upsertMyProfile({
+                    display_name: formData.displayName.trim() || null,
                     zip_code: formData.zipCode,
                     causes: formData.causes,
                     skills: formData.skills,
@@ -231,6 +245,17 @@ const OnboardingQuiz = () => {
 
                 {step === 3 && (
                     <form onSubmit={handleSubmit} className="onboard-form animate-fade-in stagger-2">
+                        <div className="onboard-field">
+                            <label className="onboard-label">Your name</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Alex Johnson"
+                                className="input"
+                                value={formData.displayName}
+                                onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                            />
+                        </div>
+
                         <div className="onboard-field">
                             <label className="onboard-label">Zip / Postal Code</label>
                             <div className="onboard-input-wrap">
