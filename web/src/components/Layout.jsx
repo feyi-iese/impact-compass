@@ -31,7 +31,7 @@ const Layout = ({ children, flush, backTo, backLabel }) => {
             </Link>
           )}
         </div>
-        <div className="layout-nav__right">
+        <div className={`layout-nav__right ${!isAuthenticated ? 'layout-nav__right--guest' : ''}`}>
           {isAuthenticated ? (
             <>
               <Link to="/feed" className="layout-nav__link">

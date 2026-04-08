@@ -144,6 +144,17 @@
     z-index: 50;
 }
 
+@media (max-width: 767px) {
+    .detail-content {
+        padding-bottom: 180px;
+    }
+
+    .detail-cta {
+        bottom: calc(64px + env(safe-area-inset-bottom) + var(--space-2));
+        padding-bottom: var(--space-2);
+    }
+}
+
 .detail-cta__actions {
     display: flex;
     gap: var(--space-3);

@@ -77,6 +77,8 @@
     background: var(--color-primary);
     border-radius: 8px;
     color: #fff;
+    transition: transform .8s var(--ease-spring);
+    transform: rotate(-90deg);
 }
 
 .layout-nav__brand {
@@ -115,6 +117,10 @@
 @media (max-width: 767px) {
     .layout-nav__right {
         display: none;
+    }
+
+    .layout-nav__right--guest {
+        display: flex;
     }
 }
 
