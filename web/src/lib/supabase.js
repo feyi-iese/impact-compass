@@ -704,6 +704,16 @@ export const sendMagicLink = async ({ email }) => {
   return { ok: true };
 };
 
+export const verifyMagicLinkToken = async ({ tokenHash, type }) => {
+  if (!supabase) throw new Error('Supabase is not configured');
+  const { data, error } = await supabase.auth.verifyOtp({
+    token_hash: tokenHash,
+    type,
+  });
+  if (error) throw error;
+  return data;
+};
+
 export const getSession = async () => {
   if (!supabase) return null;
   const { data, error } = await supabase.auth.getSession();

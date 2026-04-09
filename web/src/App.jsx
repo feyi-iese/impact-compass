@@ -6,6 +6,7 @@ import OnboardingQuiz from './pages/OnboardingQuiz';
 import ActionFeed from './pages/ActionFeed';
 import OpportunityDetail from './pages/OpportunityDetail';
 import AuthPage from './pages/AuthPage';
+import MagicLinkConfirmPage from './pages/MagicLinkConfirmPage';
 import VolunteerDashboard from './pages/VolunteerDashboard';
 import CreateEvent from './pages/CreateEvent';
 import ProfilePage from './pages/ProfilePage';
@@ -20,6 +21,7 @@ function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/auth" element={<AuthPage />} />
+      <Route path="/auth/confirm" element={<MagicLinkConfirmPage />} />
       <Route path="/waitlist" element={<LandingPage />} />
       <Route path="/onboarding" element={<OnboardingQuiz />} />
       <Route path="/feed" element={<ActionFeed />} />

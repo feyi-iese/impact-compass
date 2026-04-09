@@ -12,6 +12,7 @@ import {
 import { SEED_OPPORTUNITIES, CAUSE_COLORS } from '../lib/seedData';
 import { useAuth } from '../context/useAuth';
 import Toast from '../components/Toast';
+import { getMapsUrl } from '../lib/locationUtils';
 import './OpportunityDetail.css';
 
 const OpportunityDetail = () => {
@@ -126,6 +127,7 @@ const OpportunityDetail = () => {
     const durationStr = mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
     const causeColor = CAUSE_COLORS[cause_domain] || { bg: 'rgba(100,100,100,0.08)', text: '#555' };
     const spotsPct = ((capacity - spots_left) / capacity) * 100;
+    const mapsUrl = getMapsUrl(location_address);
 
     const handleRSVP = async () => {
         if (!isAuthenticated) {
@@ -213,11 +215,7 @@ const OpportunityDetail = () => {
                     <span>By {organizer_name}</span>
                     {organizer_verified ? (
                         <BadgeCheck size={14} className="detail-org__check" />
-                    ) : (
-                        <span className="text-xs text-muted" style={{ marginLeft: 'var(--space-2)', fontStyle: 'italic' }}>
-                            (Imported from Voluntariat en un Clic)
-                        </span>
-                    )}
+                    ) : null}
                 </div>
 
                 {/* Quick info */}
@@ -233,6 +231,14 @@ const OpportunityDetail = () => {
                         <MapPin size={15} />
                         <div>
                             <strong>{location_address}</strong>
+                            <a
+                                href={mapsUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="detail-map-link"
+                            >
+                                Open in Maps
+                            </a>
                         </div>
                     </div>
                     <div className="detail-info__item">

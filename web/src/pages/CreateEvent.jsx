@@ -6,6 +6,7 @@ import {
   updateEventRaw as updateEvent,
   getOrganizerEventMetricsRaw as getOrganizerEventMetrics,
 } from '../lib/supabase';
+import { fetchAddressSuggestions } from '../lib/locationUtils';
 import './CreateEvent.css';
 
 const EMPTY_EVENT = {
@@ -44,6 +45,10 @@ const CreateEvent = () => {
   const [eventData, setEventData] = useState(EMPTY_EVENT);
   const [status, setStatus] = useState('idle');
   const [loadingEvent, setLoadingEvent] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [addressLookupStatus, setAddressLookupStatus] = useState('idle');
+  const [addressFocused, setAddressFocused] = useState(false);
+  const [skipAddressLookup, setSkipAddressLookup] = useState(false);
 
   // Fetch organizer defaults for new event
   useEffect(() => {
@@ -94,6 +99,37 @@ const CreateEvent = () => {
       }
     })();
   }, [eventId, isEditing, stateEvent]);
+
+  useEffect(() => {
+    if (!addressFocused || skipAddressLookup) return;
+
+    const query = eventData.location_address.trim();
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setAddressLookupStatus('idle');
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setAddressLookupStatus('loading');
+      try {
+        const results = await fetchAddressSuggestions(query, { signal: controller.signal });
+        setAddressSuggestions(results);
+        setAddressLookupStatus('done');
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        console.error('Address lookup failed', error);
+        setAddressSuggestions([]);
+        setAddressLookupStatus('error');
+      }
+    }, 250);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+    };
+  }, [addressFocused, eventData.location_address, skipAddressLookup]);
 
   const populateForm = (event) => {
     const start = new Date(event.date_time);
@@ -165,6 +201,23 @@ const CreateEvent = () => {
   };
 
   const set = (key, value) => setEventData((prev) => ({ ...prev, [key]: value }));
+  const shouldShowSuggestions =
+    addressFocused &&
+    eventData.location_address.trim().length >= 3 &&
+    (addressSuggestions.length > 0 || addressLookupStatus === 'loading' || addressLookupStatus === 'error');
+
+  const handleAddressChange = (value) => {
+    setSkipAddressLookup(false);
+    setAddressLookupStatus('idle');
+    set('location_address', value);
+  };
+
+  const handleAddressSelect = (label) => {
+    setSkipAddressLookup(true);
+    set('location_address', label);
+    setAddressSuggestions([]);
+    setAddressLookupStatus('done');
+  };
 
   if (loadingEvent) {
     return (
@@ -205,7 +258,45 @@ const CreateEvent = () => {
         </div>
         <div className="create-event__form-group">
           <label className="create-event__form-label" htmlFor="evt-location">Location</label>
-          <input id="evt-location" className="input" required placeholder="Full address" value={eventData.location_address} onChange={(e) => set('location_address', e.target.value)} />
+          <div className="create-event__location-field">
+            <input
+              id="evt-location"
+              className="input"
+              required
+              placeholder="Start typing an address"
+              autoComplete="off"
+              value={eventData.location_address}
+              onChange={(e) => handleAddressChange(e.target.value)}
+              onFocus={() => setAddressFocused(true)}
+              onBlur={() => {
+                window.setTimeout(() => setAddressFocused(false), 120);
+              }}
+            />
+            {shouldShowSuggestions && (
+              <div className="create-event__location-menu" role="listbox" aria-label="Address suggestions">
+                {addressLookupStatus === 'loading' && (
+                  <div className="create-event__location-status">Looking up addresses...</div>
+                )}
+                {addressLookupStatus === 'error' && (
+                  <div className="create-event__location-status">Couldn&apos;t load suggestions. You can still type the address manually.</div>
+                )}
+                {addressSuggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.id}
+                    type="button"
+                    className="create-event__location-option"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleAddressSelect(suggestion.label);
+                    }}
+                  >
+                    {suggestion.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <span className="create-event__form-hint">Suggestions appear after 3 characters. You can still enter an address manually.</span>
         </div>
         <div className="create-event__form-row">
           <div className="create-event__form-group">

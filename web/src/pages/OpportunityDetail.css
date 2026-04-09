@@ -85,6 +85,18 @@
     gap: 2px;
 }
 
+.detail-map-link {
+    width: fit-content;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.detail-map-link:hover {
+    text-decoration: underline;
+}
+
 /* Capacity bar */
 .detail-capacity {
     display: flex;

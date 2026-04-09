@@ -14,13 +14,17 @@ const AuthPage = () => {
   const [authError, setAuthError] = useState('');
   const [cooldownEndsAt, setCooldownEndsAt] = useState(0);
   const [isFinishing, setIsFinishing] = useState(false);
-  const from = location.state?.from || '/dashboard';
+  const from = location.state?.from || window.localStorage.getItem('pending_auth_from') || '/dashboard';
   const cooldownSeconds = useMemo(
     () => Math.max(0, Math.ceil((cooldownEndsAt - Date.now()) / 1000)),
     [cooldownEndsAt]
   );
 
   useEffect(() => {
+    if (location.state?.from) {
+      window.localStorage.setItem('pending_auth_from', location.state.from);
+    }
+
     const hash = window.location.hash?.replace(/^#/, '');
     const searchParams = new URL(window.location.href).searchParams;
     const errorCode = searchParams.get('error_code');
@@ -87,6 +91,9 @@ const AuthPage = () => {
   const handleMagicLink = async (e) => {
     e.preventDefault();
     if (cooldownSeconds > 0) return;
+    if (location.state?.from) {
+      window.localStorage.setItem('pending_auth_from', location.state.from);
+    }
     setStatus('loading');
     setAuthError('');
     try {
@@ -148,6 +155,7 @@ const AuthPage = () => {
       const isDeepLink = from && from !== '/auth' && from !== '/dashboard' && from !== '/dashboard/volunteer' && from !== '/dashboard/organizer';
       const finalDest = isDeepLink ? from : roleDest;
 
+      window.localStorage.removeItem('pending_auth_from');
       navigate(finalDest, { replace: true });
     } catch (error) {
       console.error(error);

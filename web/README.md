@@ -41,9 +41,20 @@ In Supabase dashboard:
 
 - **Authentication → URL Configuration**
   - Site URL: your deployed app URL (or `http://localhost:5173` for local)
-  - Additional redirect URLs: include local + prod auth callback URLs
+  - Additional redirect URLs: include local + prod auth callback URLs, including `/auth` and `/auth/confirm`
 - **Authentication → Providers → Email**
   - Enable email OTP / magic link.
+- **Authentication → Email Templates**
+  - Replace the default magic link anchor with a link to your own confirm page so email scanners cannot consume the one-time token before the user clicks.
+  - Example:
+
+    ```html
+    <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard">
+      Sign in to Impact Compass
+    </a>
+    ```
+
+  - The `/auth/confirm` page in this app shows a real button and only verifies the token after the user clicks it.
 
 ### Reminder function setup (MVP)
 
