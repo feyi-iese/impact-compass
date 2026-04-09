@@ -171,19 +171,34 @@ export const fetchOpportunityByIdRaw = async (id) => {
 };
 
 export const getEventSignupCountRaw = async (eventId) => {
-  const url = `${supabaseUrl}/rest/v1/event_signups?event_id=eq.${eventId}&status=eq.registered&select=count`;
   try {
+    if (supabase) {
+      const { count, error } = await supabase
+        .from('event_signups')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_id', eventId)
+        .eq('status', 'registered');
+
+      if (error) throw error;
+      return count ?? 0;
+    }
+
+    const url = `${supabaseUrl}/rest/v1/event_signups?event_id=eq.${eventId}&status=eq.registered&select=id`;
     const response = await fetch(url, {
+      method: 'HEAD',
       headers: {
         'apikey': supabaseAnonKey,
         'Authorization': `Bearer ${supabaseAnonKey}`,
-        'Range-Unit': 'items',
-        'Prefer': 'count=exact'
+        'Prefer': 'count=exact',
       }
     });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const range = response.headers.get('content-range');
-    if (range) return parseInt(range.split('/')[1]);
-    return 0;
+    if (!range) return 0;
+
+    const total = Number(range.split('/')[1]);
+    return Number.isFinite(total) ? total : 0;
   } catch (err) {
     console.error('getEventSignupCountRaw error:', err);
     return 0;

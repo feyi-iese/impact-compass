@@ -134,7 +134,12 @@ const OpportunityDetail = () => {
             navigate('/auth', { state: { from: `/opportunity/${id}` } });
             return;
         }
+        const previousSpotsLeft = spots_left;
         setRsvpStatus('loading');
+        setOpp((prev) => {
+            if (!prev) return prev;
+            return { ...prev, spots_left: Math.max(prev.spots_left - 1, 0) };
+        });
         try {
             await signupForEvent(id);
             const count = await getEventSignupCount(id).catch(() => capacity - spots_left);
@@ -142,11 +147,17 @@ const OpportunityDetail = () => {
             setRsvpStatus('confirmed');
         } catch (error) {
             console.error(error);
+            setOpp((prev) => (prev ? { ...prev, spots_left: previousSpotsLeft } : prev));
             setRsvpStatus('idle');
         }
     };
 
     const handleCancelSignup = async () => {
+        const previousSpotsLeft = spots_left;
+        setOpp((prev) => {
+            if (!prev) return prev;
+            return { ...prev, spots_left: Math.min(prev.spots_left + 1, prev.capacity) };
+        });
         try {
             await cancelSignup(id);
             const count = await getEventSignupCount(id).catch(() => capacity - spots_left);
@@ -154,6 +165,7 @@ const OpportunityDetail = () => {
             setRsvpStatus('idle');
         } catch (error) {
             console.error(error);
+            setOpp((prev) => (prev ? { ...prev, spots_left: previousSpotsLeft } : prev));
         }
     };
 
